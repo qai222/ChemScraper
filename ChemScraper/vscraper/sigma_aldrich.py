@@ -84,6 +84,7 @@ def get_sigma_aldrich_patables(driver, cas: str) -> pd.DataFrame:
     dataframes = []
     for link in links:
         if link not in unique_links:
+            unique_links.append(link)
             try:
                 df = get_sigma_aldrich_patable(driver, link)
                 dataframes.append(df)
@@ -91,9 +92,8 @@ def get_sigma_aldrich_patables(driver, cas: str) -> pd.DataFrame:
                 logger.critical(f'FAILED to extract patable: {link}')
                 # logger.error(e)
                 continue
-            unique_links.append(link)
 
-    logger.info(f"sigma-aldrich search returns # of products: {len(unique_links)}")
+    logger.info(f"sigma-aldrich search returns # of products: {len(dataframes)}")
     return pd.concat(dataframes, axis=0, ignore_index=True)
 
 
