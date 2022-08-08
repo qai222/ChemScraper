@@ -7,9 +7,12 @@ import pickle
 import time
 import typing
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import urlopen, Request
 from urllib.request import urlretrieve
 
 import monty.json
+from fake_useragent import UserAgent
 from tqdm import tqdm
 
 FilePath = typing.Union[pathlib.Path, os.PathLike, str]
@@ -125,3 +128,14 @@ def download_file(url: str, destination: FilePath = None, progress_bar=True):
     except (HTTPError, URLError, ValueError) as e:
         raise e
     return filename
+
+
+def download_file_fake_agent(url, saveas: FilePath):
+    ua = UserAgent()
+    fp = urlopen(Request(url, headers={'User-Agent': ua.chrome}))
+    with open(saveas, 'wb') as f:
+        f.write(fp.read())
+
+
+def remove_url_query(url):
+    return urlparse(url)._replace(query=None).geturl()
