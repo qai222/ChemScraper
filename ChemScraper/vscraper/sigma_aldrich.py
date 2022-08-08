@@ -4,17 +4,20 @@ import pandas as pd
 from fake_useragent import UserAgent
 from loguru import logger
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 from ChemScraper.utils import chunks, get_folder
 
 ua = UserAgent()  # error msg for the first run
 
 
-def get_chrome_driver(headless=True, ) -> webdriver.Chrome:
+def get_chrome_driver(headless=True) -> webdriver.Chrome:
     window_size = "1920,1080"
     options = webdriver.ChromeOptions()
     options.add_argument("--window-size=%s" % window_size)
@@ -28,7 +31,10 @@ def get_chrome_driver(headless=True, ) -> webdriver.Chrome:
 
     if headless:
         options.add_argument("--headless")  # https://stackoverflow.com/questions/16180428/
-    driver = webdriver.Chrome(options=options)
+    try:
+        driver = webdriver.Chrome(options=options)
+    except WebDriverException:
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     return driver
 
 
