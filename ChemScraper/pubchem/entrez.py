@@ -75,13 +75,14 @@ def sdq_download_csv_with_cachekey(cachekey: str, count: int, saveas: FilePath):
     download_file(url, saveas)
 
 
-def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, test_url=False):
+def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, test_url=False, count_limit:int=None):
     """
     main function to download a list of pubchem compounds deposited by chemical vendors
 
     :param vendors: a tuple of chemical vendor names
     :param saveas: csv file to be saved as
     :param test_url: if True, no download will happen, only urls are printed in log
+    :param count_limit: entry limit for downloading
     :return:
     """
     if saveas is None:
@@ -103,4 +104,7 @@ def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, te
     cachekey = request_cachekey_for_esearch(querykey, webenv)
     logger.info(f"esearch converted to cache key at: https://pubchem.ncbi.nlm.nih.gov//#query={cachekey}")
     if not test_url:
-        sdq_download_csv_with_cachekey(cachekey, count, saveas)
+        if count_limit is None:
+            sdq_download_csv_with_cachekey(cachekey, count, saveas)
+        else:
+            sdq_download_csv_with_cachekey(cachekey, count_limit, saveas)
