@@ -6,8 +6,11 @@ import pathlib
 import pickle
 import time
 import typing
+from urllib.error import HTTPError, URLError
+from urllib.request import urlretrieve
 
 import monty.json
+from tqdm import tqdm
 
 FilePath = typing.Union[pathlib.Path, os.PathLike, str]
 
@@ -98,3 +101,27 @@ def write_smi(smis: list[str], outfile: FilePath):
     with open(outfile, "w") as f:
         for smi in smis:
             f.write(smi + "\n")
+
+
+def download_file(url: str, destination: FilePath = None, progress_bar=True):
+    def my_hook(t):
+        last_b = [0]
+
+        def inner(b=1, bsize=1, tsize=None):
+            if tsize is not None:
+                t.total = tsize
+            if b > 0:
+                t.update((b - last_b[0]) * bsize)
+            last_b[0] = b
+
+        return inner
+
+    try:
+        if progress_bar:
+            with tqdm(unit='B', unit_scale=True, miniters=1, desc=destination) as t:
+                filename, _ = urlretrieve(url, filename=destination, reporthook=my_hook(t))
+        else:
+            filename, _ = urlretrieve(url, filename=destination)
+    except (HTTPError, URLError, ValueError) as e:
+        raise e
+    return filename

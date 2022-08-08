@@ -5,6 +5,10 @@ import numpy as np
 from monty.json import MSONable
 
 
+def find_between(s, start, end):
+    return (s.split(start))[1].split(end)[0]
+
+
 def represent_nested_monty_json(o: MSONable, precision=5):
     s = "{}: ".format(o.__class__.__name__)
     for k, v in o.as_dict().items():
@@ -65,3 +69,21 @@ def chunks(lst, n):
 
 def get_timestamp():
     return int(datetime.now().timestamp() * 1000)
+
+
+def traverse_json(indict: dict, pre=None):
+    """ https://stackoverflow.com/questions/12507206 """
+    pre = pre[:] if pre else []
+    if isinstance(indict, dict):
+        for key, value in indict.items():
+            if isinstance(value, dict):
+                for d in traverse_json(value, pre + [key]):
+                    yield d
+            elif isinstance(value, list) or isinstance(value, tuple):
+                for v in value:
+                    for d in traverse_json(v, pre + [key]):
+                        yield d
+            else:
+                yield pre + [key, value]
+    else:
+        yield pre + [indict]

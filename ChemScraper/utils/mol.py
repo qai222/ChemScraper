@@ -3,6 +3,7 @@ import collections
 import re
 from io import BytesIO
 
+import rdkit.Chem
 from rdkit.Chem import MolToSmiles, MolToInchi, MolFromSmiles, MolFromSmarts
 from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.inchi import MolFromInchi
@@ -70,3 +71,8 @@ def smi2imagestr(smi: str):
     encoded_image = base64.b64encode(buffered.getvalue())
     src_str = 'data:image/png;base64,{}'.format(encoded_image.decode())
     return src_str
+
+
+def smiles_eq(smi1: str, smi2: str):
+    return rdkit.Chem.CanonSmiles(remove_stereo(smi1), useChiral=0) \
+           == rdkit.Chem.CanonSmiles(remove_stereo(smi2), useChiral=0)
