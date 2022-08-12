@@ -1,45 +1,14 @@
 import time
 
 import pandas as pd
-from fake_useragent import UserAgent
 from loguru import logger
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
-from ChemScraper.utils import chunks, get_folder
-
-ua = UserAgent()  # error msg for the first run
-
-
-def get_chrome_driver(headless=True) -> webdriver.Chrome:
-    window_size = "1920,1080"
-    options = webdriver.ChromeOptions()
-    options.add_argument("--window-size=%s" % window_size)
-    options.add_argument(f'user-agent={ua.chrome}')
-    options.add_experimental_option("prefs", {
-        "download.default_directory": f"{get_folder(__file__)}",
-        "download.prompt_for_download": False,
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True
-    })
-
-    if headless:
-        options.add_argument("--headless")  # https://stackoverflow.com/questions/16180428/
-    try:
-        driver = webdriver.Chrome(options=options)
-    except WebDriverException:
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-    return driver
-
-
-def textify_elements(eles: list[WebElement]):
-    return [e.text for e in eles]
+from ChemScraper.utils import chunks
+from ChemScraper.vscraper.se import textify_elements
 
 
 def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.DataFrame:
