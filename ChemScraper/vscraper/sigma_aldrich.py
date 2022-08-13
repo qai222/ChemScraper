@@ -21,7 +21,7 @@ def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.
     """
     logger.info(f"sigma-aldrich product url: {product_url}")
     driver.get(product_url)
-    wait = WebDriverWait(driver, timeout=10)
+    wait = WebDriverWait(driver, timeout=5)
     ts1 = time.perf_counter()
     pa_table = wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//table[1]')))[0]
     logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
@@ -46,7 +46,7 @@ def get_sigma_aldrich_patables(driver, cas: str) -> pd.DataFrame:
     logger.info(f"sigma-aldrich search url: {url}")
     driver.get(url)
     product_elements_locator = (By.XPATH, '//a[contains(@href, "/product/")]')
-    wait = WebDriverWait(driver, timeout=10)
+    wait = WebDriverWait(driver, timeout=5)
     ts1 = time.perf_counter()
     product_elements = wait.until(EC.visibility_of_all_elements_located(product_elements_locator))
     logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
