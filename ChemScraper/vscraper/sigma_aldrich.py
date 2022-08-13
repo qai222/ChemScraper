@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ChemScraper.utils import chunks
-from ChemScraper.vscraper.se import textify_elements
+from ChemScraper.vscraper.se import textify_elements, ec_visibility_of_all_elements
 
 
 def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.DataFrame:
@@ -23,11 +23,13 @@ def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.
     driver.get(product_url)
     wait = WebDriverWait(driver, timeout=10)
     ts1 = time.perf_counter()
-    pa_table = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//table[1]')))[0]
+    pa_table = wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//table[1]')))[0]
     logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
     # pa_table = driver.find_elements(By.XPATH, '//table[1]')[0]
     cols = pa_table.find_elements(By.XPATH, '//tr//th')
+    cols = wait.until(ec_visibility_of_all_elements(cols))
     rows = pa_table.find_elements(By.XPATH, '//tr//td')
+    rows = wait.until(ec_visibility_of_all_elements(rows))
     ncols = len(cols)
     assert len(rows) % ncols == 0
     rows = chunks(rows, ncols)
@@ -46,7 +48,7 @@ def get_sigma_aldrich_patables(driver, cas: str) -> pd.DataFrame:
     product_elements_locator = (By.XPATH, '//a[contains(@href, "/product/")]')
     wait = WebDriverWait(driver, timeout=10)
     ts1 = time.perf_counter()
-    product_elements = wait.until(EC.presence_of_all_elements_located(product_elements_locator))
+    product_elements = wait.until(EC.visibility_of_all_elements_located(product_elements_locator))
     logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
     links = [elem.get_attribute('href') for elem in product_elements]
     unique_links = []
