@@ -65,7 +65,7 @@ dependencies = [
     "nbformat==5.4.0",
     "nest-asyncio==1.5.5",
     "notebook==6.4.12",
-    "numpy==1.23.1",
+    "numpy==1.22.0",
     "outcome==1.2.0",
     "packaging==21.3",
     "pandas==1.4.3",

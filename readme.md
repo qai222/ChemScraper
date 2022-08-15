@@ -24,3 +24,6 @@ E26266-4X100ML,"Available to ship on August 08, 2022 Details...",$147.00
 03550-250ML,"Available to ship on August 08, 2022 Details...",$70.70
 ...
 ```
+
+### todo
+- [ ] simplify `requirements.txt`
