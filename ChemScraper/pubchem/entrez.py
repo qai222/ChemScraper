@@ -53,7 +53,7 @@ def request_cachekey_for_esearch(querykey: int, webenv: str):
     return find_between(rep.text, '<Response_cache-key>', '</Response_cache-key>')
 
 
-def sdq_download_csv_with_cachekey(cachekey: str, count: int, saveas: FilePath):
+def sdq_download_csv_with_cachekey(cachekey: str, count: int, saveas: FilePath, field_string="cid,mw,isosmiles"):
     """
     use sdq agent to download pubchem search result identified by a cachekey
 
@@ -65,7 +65,9 @@ def sdq_download_csv_with_cachekey(cachekey: str, count: int, saveas: FilePath):
     """
     url = 'https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi?'
     url += 'infmt=json&outfmt=csv'
-    url += '&query={"download":"cid,mw,isosmiles","collection":"compound",'
+    url += '&query={"download":"'
+    url += field_string
+    url += '","collection":"compound",'
     url += '"where":{"ands":[{"input":{"type":"netcachekey","idtype":"cid",'
     url += f'"key":"{cachekey}"'
     url += '}}]},"order":["relevancescore,desc"],"start":1,'
@@ -75,7 +77,10 @@ def sdq_download_csv_with_cachekey(cachekey: str, count: int, saveas: FilePath):
     download_file(url, saveas)
 
 
-def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, test_url=False, count_limit:int=None):
+def download_vendor_compounds(
+        vendors=VendorSources, saveas: FilePath = None, test_url=False,
+        count_limit:int=None, field_string='cid,mw,isosmiles'
+):
     """
     main function to download a list of pubchem compounds deposited by chemical vendors
 
@@ -83,6 +88,7 @@ def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, te
     :param saveas: csv file to be saved as
     :param test_url: if True, no download will happen, only urls are printed in log
     :param count_limit: entry limit for downloading
+    :param field_string: fields to be downloaded, default 'cid,mw,isosmiles'
     :return:
     """
     if saveas is None:
@@ -105,6 +111,6 @@ def download_vendor_compounds(vendors=VendorSources, saveas: FilePath = None, te
     logger.info(f"esearch converted to cache key at: https://pubchem.ncbi.nlm.nih.gov//#query={cachekey}")
     if not test_url:
         if count_limit is None:
-            sdq_download_csv_with_cachekey(cachekey, count, saveas)
+            sdq_download_csv_with_cachekey(cachekey, count, saveas, field_string)
         else:
-            sdq_download_csv_with_cachekey(cachekey, count_limit, saveas)
+            sdq_download_csv_with_cachekey(cachekey, count_limit, saveas, field_string)
