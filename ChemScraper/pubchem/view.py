@@ -1,3 +1,5 @@
+import pprint
+
 import requests
 from ratelimit import limits
 from requests.exceptions import HTTPError
@@ -8,6 +10,9 @@ from ChemScraper.utils import traverse_json
 """
 interact with pug view
 https://pubchemdocs.ncbi.nlm.nih.gov/pug-view
+
+useful gist for cas rn extraction
+https://gist.github.com/KhepryQuixote/00946f2f7dd5f89324d8
 """
 
 
