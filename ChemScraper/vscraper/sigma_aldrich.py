@@ -4,11 +4,12 @@ import pandas as pd
 from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ChemScraper.utils import chunks
-from ChemScraper.vscraper.se import textify_elements, ec_visibility_of_all_elements
+from ChemScraper.vscraper.se import textify_elements
 
 
 def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.DataFrame:
@@ -23,13 +24,10 @@ def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.
     driver.get(product_url)
     wait = WebDriverWait(driver, timeout=5)
     ts1 = time.perf_counter()
-    pa_table = wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//table[1]')))[0]
+    # stricter path to elements in the first table
+    cols = wait.until(EC.presence_of_all_elements_located((By.XPATH, '/descendant::table[1]/thead/tr/th')))
+    rows = wait.until(EC.presence_of_all_elements_located((By.XPATH, '/descendant::table[1]/tbody/tr/td')))
     logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
-    # pa_table = driver.find_elements(By.XPATH, '//table[1]')[0]
-    cols = pa_table.find_elements(By.XPATH, '//tr//th')
-    cols = wait.until(ec_visibility_of_all_elements(cols))
-    rows = pa_table.find_elements(By.XPATH, '//tr//td')
-    rows = wait.until(ec_visibility_of_all_elements(rows))
     ncols = len(cols)
     assert len(rows) % ncols == 0
     rows = chunks(rows, ncols)
@@ -39,6 +37,28 @@ def get_sigma_aldrich_patable(driver: webdriver.Chrome, product_url: str) -> pd.
     df.columns = cols
     df['url'] = [product_url, ] * len(rows)
     return df
+
+
+def get_sigma_aldrich_properties(driver, product_url: str) -> dict[str, str]:
+    logger.info(f"sigma-aldrich product url: {product_url}")
+    driver.get(product_url)
+    wait = WebDriverWait(driver, timeout=5)
+    ts1 = time.perf_counter()
+    try:
+        property_toggle = wait.until(EC.element_to_be_clickable((By.ID, 'properties-expansion-toggle')))
+        # .click does not work, use this from https://stackoverflow.com/a/77055003/18029270
+        property_toggle.send_keys(Keys.RETURN)
+    except IndexError:
+        pass
+
+    property_divs = wait.until(EC.presence_of_all_elements_located((By.ID, 'pdp-properties--table')))
+
+    logger.info("page ready after: {:.3f} s".format(time.perf_counter() - ts1))
+    properties = dict()
+    for prop_div in property_divs:
+        name, value = prop_div.text.split("\n")
+        properties[name.strip()] = value.strip()
+    return properties
 
 
 def get_sigma_aldrich_patables(driver, cas: str) -> pd.DataFrame:
