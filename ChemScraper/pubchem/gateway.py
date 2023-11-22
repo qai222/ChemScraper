@@ -2,6 +2,7 @@ import time
 from collections import defaultdict
 from typing import Union
 
+import rdkit.Chem
 import requests
 from loguru import logger
 from ratelimit import limits
@@ -150,6 +151,9 @@ def identify_compound(identifier: Union[str, int], input_type: str) -> Compound:
         smi = inchi2smiles(identifier)
         input_type = 'smiles'
         identifier = smi
+
+    if input_type == 'smiles':
+        identifier = rdkit.Chem.CanonSmiles(identifier)
 
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastidentity/{input_type}/{identifier}/property/InChI,CanonicalSMILES,IUPACName/json"
     url += "?identity_type=same_stereo_isotope"
