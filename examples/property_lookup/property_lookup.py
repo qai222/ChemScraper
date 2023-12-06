@@ -1,3 +1,4 @@
+import glob
 import os.path
 import random
 import time
@@ -42,3 +43,10 @@ for smi in tqdm(unique_smis):
     logger.info(f"waiting for: {wait_time}")
     time.sleep(wait_time)
     logger.info("\n")
+
+scraper_output = {}
+for jsonfile in glob.glob("prop/*.json"):
+    data = json_load(jsonfile)
+    scraper_output[data['smiles']] = data['property_dict']
+
+json_dump(scraper_output, "scraper_output.json")
